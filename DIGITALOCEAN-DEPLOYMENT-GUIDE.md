@@ -108,9 +108,11 @@ npm install && npm run build
 npm start
 ```
 
-**HTTP Port**: `5000`
+**HTTP Port**: `8080` ⚠️ **IMPORTANT: Must be 8080, NOT 5000!**
 
 **Environment**: Node.js 20.x
+
+> 🔴 **Critical**: Digital Ocean health checks port 8080 පරීක්ෂා කරනවා. HTTP Port එක `5000` කරොත් deployment fail වෙනවා!
 
 ---
 
@@ -125,6 +127,7 @@ Digital Ocean App Settings → **Environment Variables** යන්න:
 NODE_ENV=production
 
 # Database Connection
+# ⚠️ IMPORTANT: Copy exact URL from Digital Ocean dashboard - NO quotes, NO whitespace!
 DO_DATABASE_URL=postgresql://doadmin:your-password@host:port/defaultdb?sslmode=require
 DATABASE_URL=${DO_DATABASE_URL}
 
@@ -217,22 +220,62 @@ Browser එකේ ඔබගේ app URL එකට යන්න:
 Digital Ocean App → **Runtime Logs** බලන්න:
 - ✅ `Database connection established using PostgreSQL (Digital Ocean)`
 - ✅ `✅ DatabaseStorage initialized successfully`
-- ✅ `serving on port 5000`
+- ✅ `serving on port 8080` (PORT must be 8080, NOT 5000!)
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Issue 1: Database Connection Failed
+### Issue 1: Port Binding Failure (Health Check Failed)
 
-**Error**: `Database connection failed`
+**Error**: `The application did not bind to the specified port 8080`
+
+**වැරදි පිළිතුර:**
+```
+HTTP Port setting: 5000 ❌
+```
+
+**හරි පිළිතුර:**
+```
+HTTP Port setting: 8080 ✅
+```
 
 **Fix**:
-1. `DO_DATABASE_URL` හරියටද check කරන්න
-2. Database එක running වෙනවාද verify කරන්න
-3. Connection string එකේ `?sslmode=require` තියෙනවාද බලන්න
+1. Digital Ocean App Settings → **Settings** → **Component** යන්න
+2. **HTTP Port** එක `8080` කරන්න (NOT 5000!)
+3. Environment Variables වල **PORT** variable එකක් manually add කරලා තිබ්බොත් **DELETE** කරන්න
+4. **Save** කරලා **Redeploy** කරන්න
 
-### Issue 2: Build Failed
+### Issue 2: Invalid Database URL Format
+
+**Error**: `Invalid URL format in the database connection string, TypeError`
+
+**වැරදි formats:**
+```bash
+# ❌ Quotation marks තිබුණොත්
+DO_DATABASE_URL="postgresql://..."
+
+# ❌ Extra whitespace තිබුණොත්
+DO_DATABASE_URL= postgresql://...
+
+# ❌ Scheme එක නැත්නම්
+DO_DATABASE_URL=//doadmin:password@host:port/db
+```
+
+**හරි format:**
+```bash
+# ✅ හරි format - Digital Ocean dashboard එකේන් copy paste කරන්න
+DO_DATABASE_URL=postgresql://doadmin:AVNS_xxxxxxxxxxxxx@db-postgresql-sgp1-12345-do-user-xxxxx-0.f.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+```
+
+**Fix**:
+1. Digital Ocean Databases → ඔබේ database → **Connection Details** click කරන්න
+2. **Connection String** එක copy කරන්න
+3. Digital Ocean App Settings → **Environment Variables** → `DO_DATABASE_URL` edit කරන්න
+4. Copy කළ URL එක **directly paste** කරන්න - quotation marks හෝ spaces add කරන්න එපා!
+5. **Save** කරලා **Redeploy** කරන්න
+
+### Issue 3: Build Failed
 
 **Error**: `Build failed` හෝ `npm install failed`
 

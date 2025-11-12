@@ -29,37 +29,53 @@ let pool: any = null;
 let db: any = null;
 
 if (isValidDatabaseUrl) {
-  if (isNeonDatabase) {
-    // Use Neon serverless for Neon databases
-    pool = new NeonPool({ connectionString: DATABASE_URL });
-    db = drizzleNeon({ client: pool, schema });
-    console.log("✅ Database connection established using Neon PostgreSQL");
-  } else {
-    // Use regular pg for other PostgreSQL databases (Digital Ocean, etc.)
-    // Parse connection string and rebuild with proper SSL config
-    const urlObj = new URL(DATABASE_URL);
-    const sslRequired = urlObj.searchParams.get('sslmode') === 'require';
-    
-    // Remove sslmode from connection string as we'll handle SSL separately
-    urlObj.searchParams.delete('sslmode');
-    const cleanUrl = urlObj.toString();
-    
-    pool = new PgPool({ 
-      connectionString: cleanUrl,
-      ssl: sslRequired ? { 
-        rejectUnauthorized: false,
-        ca: undefined
-      } : false,
-      connectionTimeoutMillis: 30000,
-      idleTimeoutMillis: 30000,
-      max: 3,
-      min: 1,
-      statement_timeout: 30000,
-      query_timeout: 30000,
-      allowExitOnIdle: true
-    });
-    db = drizzlePg(pool, { schema });
-    console.log("✅ Database connection established using PostgreSQL (Digital Ocean)");
+  try {
+    if (isNeonDatabase) {
+      // Use Neon serverless for Neon databases
+      pool = new NeonPool({ connectionString: DATABASE_URL });
+      db = drizzleNeon({ client: pool, schema });
+      console.log("✅ Database connection established using Neon PostgreSQL");
+    } else {
+      // Use regular pg for other PostgreSQL databases (Digital Ocean, etc.)
+      // Parse connection string and rebuild with proper SSL config
+      try {
+        const urlObj = new URL(DATABASE_URL);
+        const sslRequired = urlObj.searchParams.get('sslmode') === 'require';
+        
+        // Remove sslmode from connection string as we'll handle SSL separately
+        urlObj.searchParams.delete('sslmode');
+        const cleanUrl = urlObj.toString();
+        
+        pool = new PgPool({ 
+          connectionString: cleanUrl,
+          ssl: sslRequired ? { 
+            rejectUnauthorized: false,
+            ca: undefined
+          } : false,
+          connectionTimeoutMillis: 30000,
+          idleTimeoutMillis: 30000,
+          max: 3,
+          min: 1,
+          statement_timeout: 30000,
+          query_timeout: 30000,
+          allowExitOnIdle: true
+        });
+        db = drizzlePg(pool, { schema });
+        console.log("✅ Database connection established using PostgreSQL (Digital Ocean)");
+      } catch (urlError: any) {
+        console.error('❌ Invalid DATABASE_URL format:', urlError.message);
+        console.error('   Expected format: postgresql://user:pass@host:port/dbname?sslmode=require');
+        console.error('   Received:', DATABASE_URL.substring(0, 50) + '...');
+        console.error('   Falling back to in-memory storage');
+        pool = null;
+        db = null;
+      }
+    }
+  } catch (error: any) {
+    console.error('❌ Database connection failed:', error.message);
+    console.error('   Falling back to in-memory storage');
+    pool = null;
+    db = null;
   }
 }
 
