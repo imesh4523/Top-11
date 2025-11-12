@@ -299,8 +299,9 @@ DO_DATABASE_URL=postgresql://doadmin:AVNS_xxxxxxxxxxxxx@db-postgresql-sgp1-12345
 
 **Fix**:
 1. App running වෙනවාද check කරන්න
-2. Port `5000` හරියටද configure වෙලාද බලන්න
-3. App restart කරන්න try කරන්න
+2. Port `8080` හරියටද configure වෙලාද බලන්න (NOT 5000!)
+3. Runtime Logs එකේ `serving on port 8080` message එක තියෙනවාද verify කරන්න
+4. App restart කරන්න try කරන්න
 
 ---
 
