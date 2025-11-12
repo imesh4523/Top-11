@@ -65,7 +65,7 @@ if (isValidDatabaseUrl) {
       } catch (urlError: any) {
         console.error('❌ Invalid DATABASE_URL format:', urlError.message);
         console.error('   Expected format: postgresql://user:pass@host:port/dbname?sslmode=require');
-        console.error('   Received:', DATABASE_URL.substring(0, 50) + '...');
+        console.error('   Check that the URL starts with "postgresql://" and has no quotes or whitespace');
         console.error('   Falling back to in-memory storage');
         pool = null;
         db = null;

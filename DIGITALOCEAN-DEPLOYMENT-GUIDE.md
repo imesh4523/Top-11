@@ -426,9 +426,9 @@ Deploy කරන්න කලින් check කරන්න:
 - [ ] `SESSION_SECRET` generate කරලා set කරලාද?
 - [ ] `BALANCE_ENCRYPTION_KEY` generate කරලා set කරලාද?
 - [ ] `NODE_ENV=production` set කරලාද?
-- [ ] `DO_DATABASE_URL` set කරලාද?
+- [ ] `DO_DATABASE_URL` set කරලාද (NO quotes, NO whitespace)?
 - [ ] Build command සහ Run command හරියටද configure කරලාද?
-- [ ] HTTP port `5000` set කරලාද?
+- [ ] HTTP port `8080` set කරලාද (NOT 5000!)?
 - [ ] Auto-deploy enable කරලාද?
 
 ---
